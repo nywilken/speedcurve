@@ -1,11 +1,11 @@
 package speedcurve
 
 import (
-	_ "bytes"
+	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -28,6 +28,13 @@ type (
 		TestCompleted []testInfo `json:"tests-completed"`
 		TestRemaing   []testInfo `json:"test-remaining"`
 	}
+
+	deployResponse struct {
+		DeployId int    `json:"deploy_id"`
+		SiteId   int    `json:"site_id"`
+		Status   string `json:"status"`
+		Message  string `json:"message"`
+	}
 )
 
 var (
@@ -44,11 +51,39 @@ func init() {
 	client = &http.Client{}
 }
 
-func Get() (deployInfo, error) {
-	u := fmt.Sprintf("%s/latest", uri)
-	rx, _ := http.NewRequest("GET", u, nil)
-	rx.SetBasicAuth(apiToken, "x")
-	resp, err := client.Do(rx)
+func Add(site, note, details string) (deployResponse, error) {
+
+	payload := url.Values{}
+	payload.Add("site_id", site)
+	payload.Add("note", note)
+	payload.Add("details", details)
+
+	req, _ := http.NewRequest("POST", uri, bytes.NewBufferString(payload.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(apiToken, "x")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("ERROR:", err)
+	}
+	defer resp.Body.Close()
+
+	var r deployResponse
+	err = json.NewDecoder(resp.Body).Decode(&r)
+	if err != nil {
+		log.Println("ERROR:", "Failed to decode JSON deploy response")
+		return deployResponse{}, err
+	}
+
+	return r, nil
+}
+
+func Get(id string) (deployInfo, error) {
+
+	rs := "/" + id
+	req, _ := http.NewRequest("GET", uri+rs, nil)
+	req.SetBasicAuth(apiToken, "x")
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("ERROR:", err)
 	}
@@ -62,4 +97,8 @@ func Get() (deployInfo, error) {
 	}
 
 	return d, nil
+}
+
+func Getlatest() (deployInfo, error) {
+	return Get("latest")
 }
