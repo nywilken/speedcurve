@@ -3,102 +3,96 @@ package speedcurve
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"log"
-	"net/http"
 	"net/url"
-	"os"
+	"strings"
 )
 
-const uri = "https://api.speedcurve.com/v1/deploys"
+const endpoint = "/deploys"
 
 type (
-	testInfo struct {
+	testDetails struct {
 		Test     string `json:"test"`
 		Browser  string `json:"browser"`
 		Region   string `json:"region"`
 		Template int    `json:"template"`
 	}
 
-	deployInfo struct {
-		DeployId      int        `json:"deploy_id"`
-		Status        string     `json:"status"`
-		Message       string     `json:"message"`
-		Note          string     `json:"note"`
-		Details       string     `json:"detail"`
-		TestCompleted []testInfo `json:"tests-completed"`
-		TestRemaing   []testInfo `json:"test-remaining"`
+	deployDetails struct {
+		Id             int           `json:"deploy_id"`
+		Status         string        `json:"status"`
+		Message        string        `json:"message"`
+		Note           string        `json:"note"`
+		Details        string        `json:"detail"`
+		CompletedTests []testDetails `json:"tests-completed"`
+		RemainingTests []testDetails `json:"test-remaining"`
 	}
 
 	deployResponse struct {
-		DeployId int    `json:"deploy_id"`
-		SiteId   int    `json:"site_id"`
-		Status   string `json:"status"`
-		Message  string `json:"message"`
+		Id      int           `json:"deploy_id"`
+		SiteId  int           `json:"site_id"`
+		Status  string        `json:"status"`
+		Message string        `json:"message"`
+		Info    []testDetails `json:"info"`
 	}
 )
 
-var (
-	apiToken string
-	client   *http.Client
-)
+var c *Client
 
 func init() {
-	t, ok := os.LookupEnv("SPD_API_TOKEN")
-	if ok != true {
-		log.Fatalln("Unable to find Speedcurve API token.")
-	}
-	apiToken = t
-	client = &http.Client{}
+	conf := &Config{}
+	c = NewClient(conf)
 }
 
-func Add(site, note, details string) (deployResponse, error) {
+func Add(site, note, details string) (deployResponse, error) { // {{{
+	var r deployResponse
 
 	payload := url.Values{}
 	payload.Add("site_id", site)
 	payload.Add("note", note)
 	payload.Add("details", details)
 
-	req, _ := http.NewRequest("POST", uri, bytes.NewBufferString(payload.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(apiToken, "x")
+	req, _ := c.NewRequest("POST", endpoint, bytes.NewBufferString(payload.Encode()))
+	//	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := client.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
-		log.Println("ERROR:", err)
+		return r, errors.New("request responded with errors")
 	}
 	defer resp.Body.Close()
 
-	var r deployResponse
 	err = json.NewDecoder(resp.Body).Decode(&r)
 	if err != nil {
 		log.Println("ERROR:", "Failed to decode JSON deploy response")
-		return deployResponse{}, err
+		return r, err
 	}
 
 	return r, nil
-}
+} // }}}
 
-func Get(id string) (deployInfo, error) {
+func Get(resource string) (deployDetails, error) { // {{{
+	var d deployDetails
 
-	rs := "/" + id
-	req, _ := http.NewRequest("GET", uri+rs, nil)
-	req.SetBasicAuth(apiToken, "x")
-	resp, err := client.Do(req)
+	parts := []string{endpoint, resource}
+	uri := strings.Join(parts, "/")
+
+	req, _ := c.NewRequest("GET", uri, nil)
+	resp, err := c.Do(req)
 	if err != nil {
-		log.Println("ERROR:", err)
+		return d, errors.New("request responded with errors")
 	}
 	defer resp.Body.Close()
 
-	var d deployInfo
 	err = json.NewDecoder(resp.Body).Decode(&d)
 	if err != nil {
 		log.Println("ERROR:", "Failed to decode JSON deploy response")
-		return deployInfo{}, err
+		return d, err
 	}
 
 	return d, nil
-}
+} // }}}
 
-func Getlatest() (deployInfo, error) {
+func Getlatest() (deployDetails, error) { // {{{
 	return Get("latest")
-}
+} // }}}
