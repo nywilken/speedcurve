@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-const endpoint = "/deploys"
+const deployEndpoint = "/deploys"
 
 type (
 	testDetails struct {
@@ -19,7 +19,7 @@ type (
 		Template int    `json:"template"`
 	}
 
-	deployDetails struct {
+	deployInfo struct {
 		Id             int           `json:"deploy_id"`
 		Status         string        `json:"status"`
 		Message        string        `json:"message"`
@@ -36,63 +36,64 @@ type (
 		Message string        `json:"message"`
 		Info    []testDetails `json:"info"`
 	}
+
+	Deploy struct {
+		client *Client
+	}
 )
 
-var c *Client
-
-func init() {
-	conf := &Config{}
-	c = NewClient(conf)
+func NewDeploy(client *Client) *Deploy {
+	return &Deploy{client}
 }
 
-func Add(site, note, details string) (deployResponse, error) { // {{{
-	var r deployResponse
+func (d Deploy) Add(site, note, details string) (deployResponse, error) { // {{{
+	var dr deployResponse
 
 	payload := url.Values{}
 	payload.Add("site_id", site)
 	payload.Add("note", note)
 	payload.Add("details", details)
 
-	req, _ := c.NewRequest("POST", endpoint, bytes.NewBufferString(payload.Encode()))
+	req, _ := d.client.NewRequest("POST", deployEndpoint, bytes.NewBufferString(payload.Encode()))
 	//	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := c.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
-		return r, errors.New("request responded with errors")
+		return dr, errors.New("request responded with errors")
 	}
 	defer resp.Body.Close()
 
-	err = json.NewDecoder(resp.Body).Decode(&r)
+	err = json.NewDecoder(resp.Body).Decode(&dr)
 	if err != nil {
 		log.Println("ERROR:", "Failed to decode JSON deploy response")
-		return r, err
+		return dr, err
 	}
 
-	return r, nil
+	return dr, nil
 } // }}}
 
-func Get(resource string) (deployDetails, error) { // {{{
-	var d deployDetails
+func (d Deploy) Get(resource string) (deployInfo, error) { // {{{
+	var di deployInfo
 
-	parts := []string{endpoint, resource}
+	parts := []string{deployEndpoint, resource}
 	uri := strings.Join(parts, "/")
 
-	req, _ := c.NewRequest("GET", uri, nil)
-	resp, err := c.Do(req)
+	req, _ := d.client.NewRequest("GET", uri, nil)
+	resp, err := d.client.Do(req)
 	if err != nil {
-		return d, errors.New("request responded with errors")
+		return di, errors.New("request responded with errors")
 	}
 	defer resp.Body.Close()
 
-	err = json.NewDecoder(resp.Body).Decode(&d)
+	err = json.NewDecoder(resp.Body).Decode(&di)
 	if err != nil {
 		log.Println("ERROR:", "Failed to decode JSON deploy response")
-		return d, err
+		return di, err
 	}
 
-	return d, nil
+	return di, nil
 } // }}}
 
-func Getlatest() (deployDetails, error) { // {{{
-	return Get("latest")
+func (d Deploy) Getlatest() (deployInfo, error) { // {{{
+	return d.Get("latest")
 } // }}}
