@@ -3,7 +3,6 @@ package speedcurve
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/url"
 	"strings"
@@ -49,18 +48,18 @@ func NewDeploy(client *Client) *Deploy {
 func (d Deploy) Add(site, note, details string) (deployResponse, error) { // {{{
 	var dr deployResponse
 
-	payload := url.Values{}
-	payload.Add("site_id", site)
-	payload.Add("note", note)
-	payload.Add("details", details)
+	data := url.Values{}
+	data.Add("site_id", site)
+	data.Add("note", note)
+	data.Add("details", details)
 
-	req, _ := d.client.NewRequest("POST", deployEndpoint, bytes.NewBufferString(payload.Encode()))
-	//	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
+	payload := bytes.NewBufferString(data.Encode())
+	req, _ := d.client.NewRequest("POST", deployEndpoint, payload)
 	resp, err := d.client.Do(req)
 	if err != nil {
-		return dr, errors.New("request responded with errors")
+		return dr, err
 	}
+
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&dr)
@@ -81,7 +80,7 @@ func (d Deploy) Get(resource string) (deployInfo, error) { // {{{
 	req, _ := d.client.NewRequest("GET", uri, nil)
 	resp, err := d.client.Do(req)
 	if err != nil {
-		return di, errors.New("request responded with errors")
+		return di, err
 	}
 	defer resp.Body.Close()
 
