@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func mockserver() *httptest.Server {
+func dmocksrv() *httptest.Server {
 	f := func(w http.ResponseWriter, r *http.Request) {
 
 		var code int
@@ -59,7 +59,7 @@ func mockserver() *httptest.Server {
 var deploy *Deploy
 
 func TestDeployGet(t *testing.T) {
-	server := mockserver()
+	server := dmocksrv()
 	defer server.Close()
 
 	config := &Config{server.URL, "x"}
@@ -89,7 +89,7 @@ func TestDeployGet(t *testing.T) {
 }
 
 func TestDeployAdd(t *testing.T) {
-	server := mockserver()
+	server := dmocksrv()
 	defer server.Close()
 
 	config := &Config{server.URL, "x"}

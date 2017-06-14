@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func mockserver() *httptest.Server {
+func tmocksrv() *httptest.Server {
 	f := func(w http.ResponseWriter, r *http.Request) {
 
 		var code int
@@ -52,7 +52,7 @@ func mockserver() *httptest.Server {
 var tr *TestRun
 
 func TestGetTestRun(t *testing.T) {
-	server := mockserver()
+	server := tmocksrv()
 	defer server.Close()
 
 	config := &Config{server.URL, "x"}
