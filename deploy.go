@@ -55,6 +55,7 @@ func (d Deploy) Add(site, note, details string) (deployResponse, error) { // {{{
 
 	payload := bytes.NewBufferString(data.Encode())
 	req, _ := d.client.NewRequest("POST", deployEndpoint, payload)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := d.client.Do(req)
 	if err != nil {
 		return dr, err
