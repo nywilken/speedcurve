@@ -43,7 +43,7 @@ func (t TestRun) Get(resource string) (testInfo, error) { // {{{
 
 	req, _ := t.client.NewRequest("GET", uri, nil)
 	resp, err := t.client.Do(req)
-	if resp.StatusCode != 200 {
+	if err != nil {
 		return ti, err
 	}
 	defer resp.Body.Close()
