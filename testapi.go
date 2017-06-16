@@ -29,10 +29,8 @@ type TestAPI struct {
 }
 
 // NewTestAPI returns a API client capable of interacting with Speedcurve's /tests endpoint.
-func NewTestAPI(conf *Config) *TestAPI {
-	t := &TestAPI{}
-	t.client = NewClient(conf)
-	t.endpoint = "/tests"
+func NewTestAPI(c *Client) *TestAPI {
+	t := &TestAPI{client: c, endpoint: "/tests"}
 	return t
 }
 

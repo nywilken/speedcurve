@@ -53,8 +53,8 @@ func TestTestApiGet(t *testing.T) {
 	server := tmocksrv()
 	defer server.Close()
 
-	c := &Config{server.URL, "x"}
-	ta := NewTestAPI(c)
+	client = NewClient(server.URL, "x")
+	ta := NewTestAPI(client)
 
 	var tt = []struct {
 		id               string

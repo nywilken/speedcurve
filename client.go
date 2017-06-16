@@ -8,25 +8,21 @@ import (
 	"strings"
 )
 
-const APIHost = "https://api.speedcurve.com/v1"
+const scAPIURL = "https://api.speedcurve.com/v1"
 
-type Config struct {
+// Client ...
+type Client struct {
+	client   *http.Client
 	APIHost  string
 	APIToken string
 }
 
-type Client struct {
-	client *http.Client
-	host   string
-	token  string
-}
-
 // NewClient returns a speedcurve.Client with credentials for the Speedcurve API.
-func NewClient(conf *Config) *Client {
-	t := conf.APIToken
-	h := conf.APIHost
+func NewClient(host, token string) *Client {
+	t := token
+	h := host
 
-	if conf.APIToken == "" {
+	if t == "" {
 		v, ok := os.LookupEnv("SPD_API_TOKEN")
 		if ok != true {
 			log.Fatalln("Unable to find Speedcurve API token.")
@@ -34,23 +30,23 @@ func NewClient(conf *Config) *Client {
 		t = v
 	}
 
-	if conf.APIHost == "" {
-		h = APIHost
+	if h == "" {
+		h = scAPIURL
 	}
 
-	return &Client{client: http.DefaultClient, host: h, token: t}
+	return &Client{client: http.DefaultClient, APIHost: h, APIToken: t}
 }
 
 // NewRequest returns an http.Request with information for the Speedcurve API.
 func (c *Client) NewRequest(method, url string, body io.Reader) (*http.Request, error) {
-	parts := []string{c.host, url}
+	parts := []string{c.APIHost, url}
 	uri := strings.Join(parts, "")
 
 	req, err := http.NewRequest(method, uri, body)
 	if err != nil {
 		return nil, err
 	}
-	req.SetBasicAuth(c.token, "x")
+	req.SetBasicAuth(c.APIToken, "x")
 	req.Header.Set("Content-Type", "application/json")
 
 	return req, nil

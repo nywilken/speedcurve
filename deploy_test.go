@@ -7,7 +7,10 @@ import (
 	"testing"
 )
 
-func dmocksrv() *httptest.Server {
+var deploy *DeployAPI
+var client *Client
+
+func dmocksrv() *httptest.Server { // {{{
 	f := func(w http.ResponseWriter, r *http.Request) {
 
 		var code int
@@ -51,17 +54,14 @@ func dmocksrv() *httptest.Server {
 	}
 
 	return httptest.NewServer(http.HandlerFunc(f))
-}
-
-var deploy *Deploy
+} // }}}
 
 func TestDeployGet(t *testing.T) {
 	server := dmocksrv()
 	defer server.Close()
 
-	config := &Config{server.URL, "x"}
-	client := NewClient(config)
-	deploy = NewDeploy(client)
+	client = NewClient(server.URL, "x")
+	deploy = NewDeployAPI(client)
 
 	var deployGetCases = []struct {
 		id     string
@@ -89,9 +89,8 @@ func TestDeployAdd(t *testing.T) {
 	server := dmocksrv()
 	defer server.Close()
 
-	config := &Config{server.URL, "x"}
-	client := NewClient(config)
-	deploy = NewDeploy(client)
+	client = NewClient(server.URL, "x")
+	deploy = NewDeployAPI(client)
 	var deployAddCases = []struct {
 		site    string
 		note    string
