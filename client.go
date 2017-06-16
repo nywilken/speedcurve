@@ -8,33 +8,34 @@ import (
 	"strings"
 )
 
-const scAPIURL = "https://api.speedcurve.com/v1"
+// ScAPIURI specifies Speedcurve's default API URI.
+const ScAPIURI = "https://api.speedcurve.com/v1"
 
-// Client ...
+// Client is an HTTP client wrapper for communicating with Speedcurve's API
 type Client struct {
-	client   *http.Client
+	client *http.Client
+
+	// APIHost specifies the API URI to connect to for communicating with Speedcurve's API.
+	// Defaults to ScAPIURI
 	APIHost  string
 	APIToken string
 }
 
 // NewClient returns a speedcurve.Client with credentials for the Speedcurve API.
 func NewClient(host, token string) *Client {
-	t := token
-	h := host
-
-	if t == "" {
+	if token == "" {
 		v, ok := os.LookupEnv("SPD_API_TOKEN")
 		if ok != true {
 			log.Fatalln("Unable to find Speedcurve API token.")
 		}
-		t = v
+		token = v
 	}
 
-	if h == "" {
-		h = scAPIURL
+	if host == "" {
+		host = ScAPIURI
 	}
 
-	return &Client{client: http.DefaultClient, APIHost: h, APIToken: t}
+	return &Client{client: http.DefaultClient, APIHost: host, APIToken: token}
 }
 
 // NewRequest returns an http.Request with information for the Speedcurve API.

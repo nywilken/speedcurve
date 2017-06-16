@@ -22,17 +22,17 @@ type scTestResponse struct {
 	Marks          []scCustomMark `json:"custom_metrics"`
 }
 
-// TestAPI ...
+// TestAPI client
 type TestAPI struct {
 	client   *Client
 	endpoint string
 }
 
 // NewTestAPI returns a API client capable of interacting with Speedcurve's /tests endpoint.
-func NewTestAPI(c *Client) *TestAPI {
+func NewTestAPI(c *Client) *TestAPI { // {{{
 	t := &TestAPI{client: c, endpoint: "/tests"}
 	return t
-}
+} // }}}
 
 // Get retrieves all the details available for a specific test.
 func (t TestAPI) Get(resource string) (scTestResponse, error) { // {{{

@@ -27,39 +27,36 @@ type scDeployResponse struct {
 	RemainingTests []scTestDetails `json:"tests-remaining"`
 }
 
-// DeployAPI ...
+// DeployAPI client
 type DeployAPI struct {
 	client   *Client
 	endpoint string
 }
 
-// NewDeployAPI returns a API client capable of interacting with Speedcurve's /tests endpoint.
+// NewDeployAPI returns a API client capable of interacting with Speedcurve's /deploys endpoint.
 func NewDeployAPI(c *Client) *DeployAPI {
 	d := &DeployAPI{client: c, endpoint: "/deploys"}
 	return d
 }
 
 //Add a deployment and trigger an additional round of testing for one of the sites.
-func (d DeployAPI) Add(site, note, details string) (scDeployResponse, error) { // {{{
-	var dr scDeployResponse
-
+func (d DeployAPI) Add(siteid, note, details string) (scDeployResponse, error) { // {{{
 	data := url.Values{}
-	data.Add("site_id", site)
+	data.Add("site_id", siteid)
 	data.Add("note", note)
 	data.Add("details", details)
 
-	payload := bytes.NewBufferString(data.Encode())
-	req, _ := d.client.NewRequest("POST", d.endpoint, payload)
+	var dr scDeployResponse
+	req, _ := d.client.NewRequest("POST", d.endpoint, bytes.NewBufferString(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
 	resp, err := d.client.Do(req)
 	if err != nil {
 		return dr, err
 	}
-
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&dr)
-
 	if err != nil {
 		return dr, err
 	}
@@ -69,11 +66,10 @@ func (d DeployAPI) Add(site, note, details string) (scDeployResponse, error) { /
 
 // Get the details for a particular deployment.
 func (d DeployAPI) Get(resource string) (scDeployResponse, error) { // {{{
-	var di scDeployResponse
-
 	parts := []string{d.endpoint, resource}
 	uri := strings.Join(parts, "/")
 
+	var di scDeployResponse
 	req, _ := d.client.NewRequest("GET", uri, nil)
 	resp, err := d.client.Do(req)
 	if err != nil {
