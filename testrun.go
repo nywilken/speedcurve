@@ -2,7 +2,6 @@ package speedcurve
 
 import (
 	"encoding/json"
-	"log"
 	"strings"
 )
 
@@ -50,7 +49,6 @@ func (t TestRun) Get(resource string) (testInfo, error) { // {{{
 
 	err = json.NewDecoder(resp.Body).Decode(&ti)
 	if err != nil {
-		log.Println("ERROR:", err)
 		return ti, err
 	}
 

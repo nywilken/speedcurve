@@ -19,15 +19,10 @@ func dmocksrv() *httptest.Server {
 			resp = `{
 				"deploy_id": 123,
 				"site_id": 11789,
-				"status": "running",
-				"info": [
-					 {
-						 "test": "blah",
-						 "browser": "Chrome",
-						 "region": "us-east",
-						 "template": 0
-					 }
-				 ]
+				"status": "success",
+				"message": "A deployment has been added",
+				"info": { "tests-added": [ { "test": "blah", "browser": "Chrome", "region": {"value": "us-east-1"}, "template": 0 } ] },
+				 "test-requested": 2
 			}`
 		case "/deploys/0":
 			code = 404
@@ -41,7 +36,9 @@ func dmocksrv() *httptest.Server {
 				"deploy_id": 91088,
 				"status": "completed",
 				"note": "short note",
-				"detail": "long note"
+				"detail": "long note",
+				"tests-completed": [ { "test": "blah", "browser": "Chrome", "region": "us-east-1", "template": 0 } ],
+				"tests-remaining": [ { "test": "blah", "browser": "Firefox", "region": "us-east-1", "template": 0 } ]
 			}`
 		default:
 			code = 500
@@ -101,17 +98,23 @@ func TestDeployAdd(t *testing.T) {
 		details string
 		status  string
 	}{
-		{"11789", "note", "detail", "running"},
+		{"11789", "note", "detail", "success"},
 	}
 
 	t.Log("Given the need to add a new deploy.")
 	for _, tc := range deployAddCases {
 		t.Logf("\tWhen adding a new deploy for %s", tc.site)
-		resp, _ := deploy.Add(tc.site, tc.note, tc.details)
+		resp, err := deploy.Add(tc.site, tc.note, tc.details)
+		if err != nil {
+			t.Errorf("\t\tFailed with an error: %s", err)
+			return
+		}
+
 		if resp.Status != tc.status {
 			t.Errorf("\t\tShould have gotten status %s but got %s.", tc.status, resp.Status)
 			return
 		}
+
 		t.Logf("\t\tShould respond with status %s.", resp.Status)
 	}
 }

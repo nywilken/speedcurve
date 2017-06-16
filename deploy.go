@@ -3,7 +3,6 @@ package speedcurve
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/url"
 	"strings"
 )
@@ -14,7 +13,6 @@ type (
 	testDetails struct {
 		Test     string `json:"test"`
 		Browser  string `json:"browser"`
-		Region   string `json:"region"`
 		Template int    `json:"template"`
 	}
 
@@ -25,15 +23,18 @@ type (
 		Note           string        `json:"note"`
 		Details        string        `json:"detail"`
 		CompletedTests []testDetails `json:"tests-completed"`
-		RemainingTests []testDetails `json:"test-remaining"`
+		RemainingTests []testDetails `json:"tests-remaining"`
 	}
 
 	deployResponse struct {
-		Id      int           `json:"deploy_id"`
-		SiteId  int           `json:"site_id"`
-		Status  string        `json:"status"`
-		Message string        `json:"message"`
-		Info    []testDetails `json:"info"`
+		Id      int    `json:"deploy_id"`
+		SiteId  int    `json:"site_id"`
+		Status  string `json:"status"`
+		Message string `json:"message"`
+		Info    struct {
+			ScheduledTests []testDetails `json:"tests-added"`
+		} `json:"info"`
+		TestsRequested int `json:"tests-requested"`
 	}
 
 	Deploy struct {
@@ -64,8 +65,8 @@ func (d Deploy) Add(site, note, details string) (deployResponse, error) { // {{{
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&dr)
+
 	if err != nil {
-		log.Println("ERROR:", "Failed to decode JSON deploy response")
 		return dr, err
 	}
 
@@ -87,7 +88,6 @@ func (d Deploy) Get(resource string) (deployInfo, error) { // {{{
 
 	err = json.NewDecoder(resp.Body).Decode(&di)
 	if err != nil {
-		log.Println("ERROR:", "Failed to decode JSON deploy response")
 		return di, err
 	}
 
