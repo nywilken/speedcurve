@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func tmocksrv() *httptest.Server {
+func tmocksrv() *httptest.Server { // {{{
 	f := func(w http.ResponseWriter, r *http.Request) {
 
 		var code int
@@ -47,19 +47,16 @@ func tmocksrv() *httptest.Server {
 	}
 
 	return httptest.NewServer(http.HandlerFunc(f))
-}
+} // }}}
 
-var tr *TestRun
-
-func TestGetTestRun(t *testing.T) {
+func TestTestApiGet(t *testing.T) {
 	server := tmocksrv()
 	defer server.Close()
 
-	config := &Config{server.URL, "x"}
-	client := NewClient(config)
-	tr = NewTestRun(client)
+	c := &Config{server.URL, "x"}
+	ta := NewTestAPI(c)
 
-	var getTestRunCases = []struct {
+	var tt = []struct {
 		id               string
 		desc             string
 		expectedRequests int
@@ -71,9 +68,9 @@ func TestGetTestRun(t *testing.T) {
 	}
 
 	t.Log("Given the need to get a test run from Speedcurve")
-	for _, tc := range getTestRunCases {
+	for _, tc := range tt {
 		t.Logf("\tWhen requesting test run details for %s", tc.desc)
-		resp, _ := tr.Get(tc.id)
+		resp, _ := ta.Get(tc.id)
 		if resp.Requests != tc.expectedRequests {
 			t.Errorf("\t\tShould have a request count of %d, but got %d.", tc.expectedRequests, resp.Requests)
 			return

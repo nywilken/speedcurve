@@ -5,52 +5,55 @@ import (
 	"strings"
 )
 
-const testEndpoint = "/tests"
-
-type (
-	mark struct {
-		Name  string `json:"mark"`
-		Value string `json:"value"`
-	}
-
-	testInfo struct {
-		Id             string `json:"test_id"`
-		Url            string `json:"url"`
-		Browser        string `json:"browser"`
-		Status         int    `json:"status"`
-		Requests       int    `json:"requests"`
-		Render         int    `json:"render"`
-		VisualComplete int    `json:"visually-complete"`
-		Loaded         int    `json:"loaded"`
-		Marks          []mark `json:"custom_metrics"`
-	}
-
-	TestRun struct {
-		client *Client
-	}
-)
-
-func NewTestRun(client *Client) *TestRun {
-	return &TestRun{client}
+type scCustomMark struct {
+	Name  string `json:"mark"`
+	Value string `json:"value"`
 }
 
-func (t TestRun) Get(resource string) (testInfo, error) { // {{{
-	var ti testInfo
+type scTestResponse struct {
+	ID             string         `json:"test_id"`
+	URL            string         `json:"url"`
+	Browser        string         `json:"browser"`
+	Status         int            `json:"status"`
+	Requests       int            `json:"requests"`
+	Render         int            `json:"render"`
+	VisualComplete int            `json:"visually-complete"`
+	Loaded         int            `json:"loaded"`
+	Marks          []scCustomMark `json:"custom_metrics"`
+}
 
-	parts := []string{testEndpoint, resource}
+// TestAPI ...
+type TestAPI struct {
+	client   *Client
+	endpoint string
+}
+
+// NewTestAPI returns a API client capable of interacting with Speedcurve's /tests endpoint.
+func NewTestAPI(conf *Config) *TestAPI {
+	t := &TestAPI{}
+	t.client = NewClient(conf)
+	t.endpoint = "/tests"
+	return t
+}
+
+// Get retrieves all the details available for a specific test.
+func (t TestAPI) Get(resource string) (scTestResponse, error) { // {{{
+	var tr scTestResponse
+
+	parts := []string{t.endpoint, resource}
 	uri := strings.Join(parts, "/")
 
 	req, _ := t.client.NewRequest("GET", uri, nil)
 	resp, err := t.client.Do(req)
 	if err != nil {
-		return ti, err
+		return tr, err
 	}
 	defer resp.Body.Close()
 
-	err = json.NewDecoder(resp.Body).Decode(&ti)
+	err = json.NewDecoder(resp.Body).Decode(&tr)
 	if err != nil {
-		return ti, err
+		return tr, err
 	}
 
-	return ti, nil
+	return tr, nil
 } // }}}
