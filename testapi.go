@@ -5,21 +5,28 @@ import (
 	"strings"
 )
 
-type scCustomMark struct {
+type customMetric struct {
 	Name  string `json:"mark"`
 	Value string `json:"value"`
 }
 
-type scTestResponse struct {
-	ID             string         `json:"test_id"`
+//TestDetails is a type containing the details available for a specific test.
+type TestDetails struct {
+	TestID         string         `json:"test_id"`
 	URL            string         `json:"url"`
+	Timezone       string         `json:"timezone"`
+	Day            string         `json:"day"`
+	Timestamp      int64          `json:"timestamp"`
+	Region         string         `json:"region"`
 	Browser        string         `json:"browser"`
 	Status         int            `json:"status"`
 	Requests       int            `json:"requests"`
-	Render         int            `json:"render"`
-	VisualComplete int            `json:"visually-complete"`
+	FirstByte      int            `json:"byte"`
+	StartRender    int            `json:"render"`
+	VisualComplete int            `json:"visually_complete"`
+	DomComplete    int            `json:"dom"`
 	Loaded         int            `json:"loaded"`
-	Marks          []scCustomMark `json:"custom_metrics"`
+	CustomMetrics  []customMetric `json:"custom_metrics"`
 }
 
 // TestAPI client
@@ -35,8 +42,8 @@ func NewTestAPI(c *Client) *TestAPI { // {{{
 } // }}}
 
 // Get retrieves all the details available for a specific test.
-func (t TestAPI) Get(resource string) (scTestResponse, error) { // {{{
-	var tr scTestResponse
+func (t TestAPI) Get(resource string) (TestDetails, error) { // {{{
+	var tr TestDetails
 
 	parts := []string{t.endpoint, resource}
 	uri := strings.Join(parts, "/")

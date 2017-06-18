@@ -7,24 +7,31 @@ import (
 	"strings"
 )
 
-type scTestDetails struct {
+type testinfo struct {
 	Test     string `json:"test"`
 	Browser  string `json:"browser"`
 	Template int    `json:"template"`
 }
 
-type scDeployResponse struct {
-	ID      int    `json:"deploy_id"`
-	Status  string `json:"status"`
-	Message string `json:"message"`
-	Note    string `json:"note"`
-	Details string `json:"detail"`
-	Info    struct {
-		ScheduledTests []scTestDetails `json:"tests-added"`
+type DeployDetails struct {
+	DeployID       int        `json:"deploy_id"`
+	SiteID         int        `json:"site_id"`
+	Status         string     `json:"status"`
+	Note           string     `json:"note"`
+	Detail         string     `json:"detail"`
+	TestsCompleted []testinfo `json:"tests-completed"`
+	TestsRemaining []testinfo `json:"tests-remaining"`
+}
+
+type DeployResponse struct {
+	DeployID int    `json:"deploy_id"`
+	SiteID   int    `json:"site_id"`
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	Info     struct {
+		ScheduledTests []testinfo `json:"tests-added"`
 	} `json:"info"`
-	TestsRequested int             `json:"tests-requested"`
-	CompletedTests []scTestDetails `json:"tests-completed"`
-	RemainingTests []scTestDetails `json:"tests-remaining"`
+	TestsRequested int `json:"tests-requested"`
 }
 
 // DeployAPI client
@@ -34,19 +41,19 @@ type DeployAPI struct {
 }
 
 // NewDeployAPI returns a API client capable of interacting with Speedcurve's /deploys endpoint.
-func NewDeployAPI(c *Client) *DeployAPI {
+func NewDeployAPI(c *Client) *DeployAPI { // {{{
 	d := &DeployAPI{client: c, endpoint: "/deploys"}
 	return d
-}
+} // }}}
 
 //Add a deployment and trigger an additional round of testing for one of the sites.
-func (d DeployAPI) Add(siteid, note, details string) (scDeployResponse, error) { // {{{
+func (d DeployAPI) Add(siteid, note, details string) (DeployResponse, error) { // {{{
 	data := url.Values{}
 	data.Add("site_id", siteid)
 	data.Add("note", note)
 	data.Add("details", details)
 
-	var dr scDeployResponse
+	var dr DeployResponse
 	req, _ := d.client.NewRequest("POST", d.endpoint, bytes.NewBufferString(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -65,11 +72,11 @@ func (d DeployAPI) Add(siteid, note, details string) (scDeployResponse, error) {
 } // }}}
 
 // Get the details for a particular deployment.
-func (d DeployAPI) Get(resource string) (scDeployResponse, error) { // {{{
+func (d DeployAPI) Get(resource string) (DeployDetails, error) { // {{{
 	parts := []string{d.endpoint, resource}
 	uri := strings.Join(parts, "/")
 
-	var di scDeployResponse
+	var di DeployDetails
 	req, _ := d.client.NewRequest("GET", uri, nil)
 	resp, err := d.client.Do(req)
 	if err != nil {
@@ -86,6 +93,6 @@ func (d DeployAPI) Get(resource string) (scDeployResponse, error) { // {{{
 } // }}}
 
 //Getlatest returns details and status of testing for the latest deployment.
-func (d DeployAPI) Getlatest() (scDeployResponse, error) { // {{{
+func (d DeployAPI) Getlatest() (DeployDetails, error) { // {{{
 	return d.Get("latest")
 } // }}}

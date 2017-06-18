@@ -60,7 +60,7 @@ func TestTestApiGet(t *testing.T) {
 		id               string
 		desc             string
 		expectedRequests int
-		expectedMarks    int
+		expectedMetrics  int
 	}{
 		{"0", "a non-existent test run", 0, 0},
 		{"117", "a completed test run", 56, 0},
@@ -75,11 +75,11 @@ func TestTestApiGet(t *testing.T) {
 			t.Errorf("\t\tShould have a request count of %d, but got %d.", tc.expectedRequests, resp.Requests)
 			return
 		}
-		if len(resp.Marks) != tc.expectedMarks {
-			t.Errorf("\t\tShould have %d custom marks, but got %d.", tc.expectedMarks, len(resp.Marks))
+		if len(resp.CustomMetrics) != tc.expectedMetrics {
+			t.Errorf("\t\tShould have %d custom marks, but got %d.", tc.expectedMetrics, len(resp.CustomMetrics))
 			return
 		}
 		t.Logf("\t\tShould respond with a request count of %d", resp.Requests)
-		t.Logf("\t\tAnd with %d custom mark(s).", len(resp.Marks))
+		t.Logf("\t\tAnd with %d custom mark(s).", len(resp.CustomMetrics))
 	}
 }
