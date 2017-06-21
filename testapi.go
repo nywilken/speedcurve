@@ -21,11 +21,11 @@ type TestDetails struct {
 	Browser        string         `json:"browser"`
 	Status         int            `json:"status"`
 	Requests       int            `json:"requests"`
-	FirstByte      int            `json:"byte"`
-	StartRender    int            `json:"render"`
-	VisualComplete int            `json:"visually_complete"`
-	DomComplete    int            `json:"dom"`
-	Loaded         int            `json:"loaded"`
+	FirstByte      int64          `json:"byte"`
+	StartRender    int64          `json:"render"`
+	VisualComplete int64          `json:"visually_complete"`
+	DomComplete    int64          `json:"dom"`
+	Loaded         int64          `json:"loaded"`
 	CustomMetrics  []customMetric `json:"custom_metrics"`
 }
 

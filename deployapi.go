@@ -14,8 +14,8 @@ type testinfo struct {
 }
 
 type DeployDetails struct {
-	DeployID       int        `json:"deploy_id"`
-	SiteID         int        `json:"site_id"`
+	DeployID       int64      `json:"deploy_id"`
+	SiteID         int64      `json:"site_id"`
 	Status         string     `json:"status"`
 	Note           string     `json:"note"`
 	Detail         string     `json:"detail"`
@@ -24,8 +24,8 @@ type DeployDetails struct {
 }
 
 type DeployResponse struct {
-	DeployID int    `json:"deploy_id"`
-	SiteID   int    `json:"site_id"`
+	DeployID int64  `json:"deploy_id"`
+	SiteID   int64  `json:"site_id"`
 	Status   string `json:"status"`
 	Message  string `json:"message"`
 	Info     struct {
