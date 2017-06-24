@@ -8,9 +8,6 @@ import (
 	"strings"
 )
 
-// ScBaseURI specifies Speedcurve's default API URI.
-const ScBaseURI = "https://api.speedcurve.com/v1"
-
 // Client is an HTTP client wrapper for communicating with Speedcurve's API
 type Client struct {
 	client *http.Client
@@ -22,7 +19,7 @@ type Client struct {
 }
 
 // NewClient returns a speedcurve.Client with credentials for the Speedcurve API.
-func NewClient(host, token string) *Client {
+func NewClient(token, host string) *Client {
 	if token == "" {
 		v, ok := os.LookupEnv("SPD_API_TOKEN")
 		if ok != true {
@@ -32,7 +29,7 @@ func NewClient(host, token string) *Client {
 	}
 
 	if host == "" {
-		host = ScBaseURI
+		host = "https://api.speedcurve.com/v1"
 	}
 
 	return &Client{client: http.DefaultClient, APIHost: host, APIToken: token}

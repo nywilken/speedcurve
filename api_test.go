@@ -7,10 +7,9 @@ import (
 	"testing"
 )
 
-var deploy *DeployAPI
 var client *Client
 
-func dmocksrv() *httptest.Server { // {{{
+func mocksrv() *httptest.Server { // {{{
 	f := func(w http.ResponseWriter, r *http.Request) {
 
 		var code int
@@ -43,6 +42,29 @@ func dmocksrv() *httptest.Server { // {{{
 				"tests-completed": [ { "test": "blah", "browser": "Chrome", "region": "us-east-1", "template": 0 } ],
 				"tests-remaining": [ { "test": "blah", "browser": "Firefox", "region": "us-east-1", "template": 0 } ]
 			}`
+		case "/tests/0":
+			code = 404
+			resp = `{"error": "Test not found"}`
+		case "/tests/117":
+			code = 200
+			resp = `{"deploy_id": 117, "status":0, "requests":56}`
+		case "/tests/989":
+			code = 200
+			resp = `{
+				"deploy_id": 989,
+				"status":0,
+				"requests":56,
+				"custom_metrics": [
+						{
+							"mark": "hls_request_m3u8",
+							"value": "250"
+						},
+						{
+							"mark": "hls_request_segement_1",
+							"value": "1240"
+						}
+					]
+			}`
 		default:
 			code = 500
 			resp = `{}`
@@ -56,12 +78,11 @@ func dmocksrv() *httptest.Server { // {{{
 	return httptest.NewServer(http.HandlerFunc(f))
 } // }}}
 
-func TestDeployGet(t *testing.T) {
-	server := dmocksrv()
+func TestGetDeploy(t *testing.T) {
+	server := mocksrv()
 	defer server.Close()
 
-	client = NewClient(server.URL, "x")
-	deploy = NewDeployAPI(client)
+	client = NewClient("x", server.URL)
 
 	var deployGetCases = []struct {
 		id     string
@@ -76,7 +97,7 @@ func TestDeployGet(t *testing.T) {
 	t.Log("Given the need to get a deploy from Speedcurve")
 	for _, tc := range deployGetCases {
 		t.Logf("\tWhen requesting deploy details for %s", tc.desc)
-		resp, _ := deploy.Get(tc.id)
+		resp, _ := client.GetDeploy(tc.id)
 		if resp.Status != tc.status {
 			t.Errorf("\t\tShould have gotten status %s but got %s.", tc.status, resp.Status)
 			return
@@ -85,12 +106,12 @@ func TestDeployGet(t *testing.T) {
 	}
 }
 
-func TestDeployAdd(t *testing.T) {
-	server := dmocksrv()
+func TestAddDeploy(t *testing.T) {
+	server := mocksrv()
 	defer server.Close()
 
-	client = NewClient(server.URL, "x")
-	deploy = NewDeployAPI(client)
+	client = NewClient("x", server.URL)
+
 	var deployAddCases = []struct {
 		site    string
 		note    string
@@ -103,7 +124,7 @@ func TestDeployAdd(t *testing.T) {
 	t.Log("Given the need to add a new deploy.")
 	for _, tc := range deployAddCases {
 		t.Logf("\tWhen adding a new deploy for %s", tc.site)
-		resp, err := deploy.Add(tc.site, tc.note, tc.details)
+		resp, err := client.AddDeploy(tc.site, tc.note, tc.details)
 		if err != nil {
 			t.Errorf("\t\tFailed with an error: %s", err)
 			return
@@ -115,5 +136,39 @@ func TestDeployAdd(t *testing.T) {
 		}
 
 		t.Logf("\t\tShould respond with status %s.", resp.Status)
+	}
+}
+
+func TestGetTest(t *testing.T) {
+	server := mocksrv()
+	defer server.Close()
+
+	client = NewClient("x", server.URL)
+
+	var tt = []struct {
+		id               string
+		desc             string
+		expectedRequests int
+		expectedMetrics  int
+	}{
+		{"0", "a non-existent test run", 0, 0},
+		{"117", "a completed test run", 56, 0},
+		{"989", "a completed test run with custom marks", 56, 2},
+	}
+
+	t.Log("Given the need to get a test run from Speedcurve")
+	for _, tc := range tt {
+		t.Logf("\tWhen requesting test run details for %s", tc.desc)
+		resp, _ := client.GetTest(tc.id)
+		if resp.Requests != tc.expectedRequests {
+			t.Errorf("\t\tShould have a request count of %d, but got %d.", tc.expectedRequests, resp.Requests)
+			return
+		}
+		if len(resp.CustomMetrics) != tc.expectedMetrics {
+			t.Errorf("\t\tShould have %d custom marks, but got %d.", tc.expectedMetrics, len(resp.CustomMetrics))
+			return
+		}
+		t.Logf("\t\tShould respond with a request count of %d", resp.Requests)
+		t.Logf("\t\tAnd with %d custom mark(s).", len(resp.CustomMetrics))
 	}
 }
