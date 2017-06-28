@@ -2,37 +2,28 @@ package speedcurve
 
 import (
 	"io"
-	"log"
 	"net/http"
-	"os"
 	"strings"
 )
 
 // Client is an HTTP client wrapper for communicating with Speedcurve's API
 type Client struct {
-	client *http.Client
-
+	// APIToken is the account secret for authenticating to Speedcurve's API.
+	APIToken string
 	// APIHost specifies the API URI to connect to for communicating with Speedcurve's API.
 	// Defaults to ScBaseURI
-	APIHost  string
-	APIToken string
+	APIHost string
+
+	client *http.Client
 }
 
 // NewClient returns a speedcurve.Client with credentials for the Speedcurve API.
 func NewClient(token, host string) *Client {
-	if token == "" {
-		v, ok := os.LookupEnv("SPD_API_TOKEN")
-		if ok != true {
-			log.Fatalln("Unable to find Speedcurve API token.")
-		}
-		token = v
-	}
-
 	if host == "" {
 		host = "https://api.speedcurve.com/v1"
 	}
 
-	return &Client{client: http.DefaultClient, APIHost: host, APIToken: token}
+	return &Client{APIToken: token, APIHost: host, client: http.DefaultClient}
 }
 
 // NewRequest returns an http.Request with information for the Speedcurve API.
