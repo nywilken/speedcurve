@@ -1,3 +1,5 @@
+// Copyright © 2017 Wilken Rivera
+
 package speedcurve
 
 type customMetric struct {

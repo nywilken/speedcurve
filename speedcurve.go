@@ -1,3 +1,19 @@
+// Copyright © 2017 Wilken Rivera
+
+/*
+Package speedcurve provides a Go client for working with Speedcurve's Web Page Test API.
+For more information on Speedcurve's V1 API, see https://api.speedcurve.com.
+
+Example Usage:
+
+	// Create client with Speedcurve Token
+	token := "SpeedcurveAPITokenString"
+	sc := speedcurve.NewClient(token, "")
+
+	// Get the latest deploy information
+	d, _ := sc.GetLatestDeploy()
+	fmt.Println(d)
+*/
 package speedcurve
 
 import (
