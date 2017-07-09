@@ -2,12 +2,17 @@
 
 package speedcurve
 
+import (
+	"encoding/json"
+)
+
 type customMetric struct {
 	Name  string `json:"mark"`
 	Value string `json:"value"`
 }
 
-//TestDetails ...
+// TestDetails represents the response details when issuing a GET to
+// Speedcurve's tests API endpoint.
 type TestDetails struct {
 	TestID         string         `json:"test_id"`
 	URL            string         `json:"url"`
@@ -24,4 +29,9 @@ type TestDetails struct {
 	DomComplete    int64          `json:"dom"`
 	Loaded         int64          `json:"loaded"`
 	CustomMetrics  []customMetric `json:"custom_metrics"`
+}
+
+func (t TestDetails) String() string {
+	o, _ := json.Marshal(t)
+	return string(o)
 }

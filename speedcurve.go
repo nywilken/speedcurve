@@ -71,13 +71,13 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 }
 
 //AddDeploy triggers a Speedcurve deploy run for the specified site.
-func (c *Client) AddDeploy(site, note, details string) (DeployResponse, error) {
+func (c *Client) AddDeploy(site, note, details string) (Deploy, error) {
 	data := url.Values{}
 	data.Add("site_id", site)
 	data.Add("note", note)
 	data.Add("details", details)
 
-	var d DeployResponse
+	var d Deploy
 	req, _ := c.NewRequest("POST", "/deploys", bytes.NewBufferString(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
