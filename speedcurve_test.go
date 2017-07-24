@@ -116,10 +116,10 @@ func TestAddDeploy(t *testing.T) {
 	client = speedcurve.NewClient("x", server.URL)
 
 	var deployAddCases = []struct {
-		site    string
-		note    string
-		details string
-		status  string
+		site   string
+		note   string
+		detail string
+		status string
 	}{
 		{"11789", "note", "detail", "success"},
 	}
@@ -127,7 +127,7 @@ func TestAddDeploy(t *testing.T) {
 	t.Log("Given the need to add a new deploy.")
 	for _, tc := range deployAddCases {
 		t.Logf("\tWhen adding a new deploy for %s", tc.site)
-		resp, err := client.AddDeploy(tc.site, tc.note, tc.details)
+		resp, err := client.AddDeploy(tc.site, tc.note, tc.detail)
 		if err != nil {
 			t.Errorf("\t\tFailed with an error: %s", err)
 			return

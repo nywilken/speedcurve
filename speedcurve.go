@@ -75,7 +75,7 @@ func (c *Client) AddDeploy(site, note, details string) (DeployResponse, error) {
 	data := url.Values{}
 	data.Add("site_id", site)
 	data.Add("note", note)
-	data.Add("details", details)
+	data.Add("detail", details)
 
 	var d DeployResponse
 	req, _ := c.NewRequest("POST", "/deploys", bytes.NewBufferString(data.Encode()))
