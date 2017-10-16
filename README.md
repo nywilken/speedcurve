@@ -17,8 +17,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/nywilken/speedcurve"
 	"os"
+
+	"github.com/nywilken/speedcurve"
 )
 
 func main() {
