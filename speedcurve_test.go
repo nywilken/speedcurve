@@ -4,10 +4,11 @@ package speedcurve_test
 
 import (
 	"fmt"
-	"github.com/nywilken/speedcurve"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/nywilken/speedcurve"
 )
 
 var client *speedcurve.Client

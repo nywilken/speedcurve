@@ -25,6 +25,59 @@ import (
 	"strings"
 )
 
+type testinfo struct {
+	Test     string `json:"test"`
+	Browser  string `json:"browser"`
+	Template int    `json:"template"`
+}
+
+//DeployDetails ...
+type DeployDetails struct {
+	DeployID       int64      `json:"deploy_id"`
+	SiteID         int64      `json:"site_id"`
+	Status         string     `json:"status"`
+	Note           string     `json:"note"`
+	Detail         string     `json:"detail"`
+	TestsCompleted []testinfo `json:"tests-completed"`
+	TestsRemaining []testinfo `json:"tests-remaining"`
+}
+
+//DeployResponse ...
+type DeployResponse struct {
+	DeployID int64  `json:"deploy_id"`
+	SiteID   int64  `json:"site_id"`
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	Info     struct {
+		ScheduledTests []testinfo `json:"tests-added"`
+	} `json:"info"`
+	TestsRequested int `json:"tests-requested"`
+}
+
+type customMetric struct {
+	Name  string `json:"mark"`
+	Value string `json:"value"`
+}
+
+//TestDetails ...
+type TestDetails struct {
+	TestID         string         `json:"test_id"`
+	URL            string         `json:"url"`
+	Timezone       string         `json:"timezone"`
+	Day            string         `json:"day"`
+	Timestamp      int64          `json:"timestamp"`
+	Region         string         `json:"region"`
+	Browser        string         `json:"browser"`
+	Status         int            `json:"status"`
+	Requests       int            `json:"requests"`
+	FirstByte      int64          `json:"byte"`
+	StartRender    int64          `json:"render"`
+	VisualComplete int64          `json:"visually_complete"`
+	DomComplete    int64          `json:"dom"`
+	Loaded         int64          `json:"loaded"`
+	CustomMetrics  []customMetric `json:"custom_metrics"`
+}
+
 // Client is an HTTP client wrapper for communicating with Speedcurve's API
 type Client struct {
 	// APIToken is the account secret for authenticating to Speedcurve's API.
